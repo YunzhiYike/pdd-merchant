@@ -6,7 +6,7 @@
     "autoload": {
         "psr-4": {
             "Yunzhiyike\\PddMerchant\\": "src/",
-            "YunzhiyikeTests\\": "./tests/"
+            "Yunzhiyike\\tests\\": "./src/Yunzhiyike/tests/"
         }
     },
     "authors": [

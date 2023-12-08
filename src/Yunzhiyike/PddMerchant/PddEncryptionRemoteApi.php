@@ -1,12 +1,13 @@
 <?php
 
 declare(strict_types=1);
+namespace Yunzhiyike\PddMerchant;
 /**
  * This file is part of Yunzhiyike
  */
 
-use Exception\PddEncryptionRemoteApiException;
 use GuzzleHttp\Client;
+use Yunzhiyike\PddMerchant\Exception\PddEncryptionRemoteApiException;
 
 class PddEncryptionRemoteApi
 {

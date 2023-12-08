@@ -5,7 +5,7 @@ declare(strict_types=1);
  * This file is part of Yunzhiyike
  */
 
-namespace Exception;
+namespace Yunzhiyike\PddMerchant\Exception;
 
 use Exception;
 

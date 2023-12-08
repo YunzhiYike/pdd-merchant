@@ -1,1 +1,1 @@
-{"version":1,"defects":{"PddMerchantTest::test":4,"PddTest::test":4},"times":{"PddMerchantTest::test":0.004,"PddTest::test":0.003}}
+{"version":1,"defects":{"PddMerchantTest::test":4,"PddTest::test":4,"Yunzhiyike\\tests\\PddTest::test":4},"times":{"PddMerchantTest::test":0.004,"PddTest::test":0.003,"Yunzhiyike\\tests\\PddTest::test":0.003}}
