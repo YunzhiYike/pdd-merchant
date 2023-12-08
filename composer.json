@@ -1,0 +1,32 @@
+{
+    "name": "yunzhiyike/pdd-merchant",
+    "description": "This is Pdd Merchant Backend Api",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Yunzhiyike\\PddMerchant\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "yunzhiyike"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "scripts": {
+        "cs-fix": "php-cs-fixer fix $1"
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "friendsofphp/php-cs-fixer": "^3.40"
+    }
+}
