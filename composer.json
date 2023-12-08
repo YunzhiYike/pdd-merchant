@@ -15,7 +15,7 @@
         }
     ],
     "require": {
-        "guzzlehttp/guzzle": "^7.8"
+        "guzzlehttp/guzzle": "~7.8"
     },
     "scripts": {
         "cs-fix": "php-cs-fixer fix $1",
