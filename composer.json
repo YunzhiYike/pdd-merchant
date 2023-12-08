@@ -5,8 +5,12 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Yunzhiyike\\PddMerchant\\": "src/",
-            "Yunzhiyike\\tests\\": "./src/Yunzhiyike/tests/"
+            "Yunzhiyike\\PddMerchant\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Yunzhiyike\\Test\\": "tests"
         }
     },
     "authors": [

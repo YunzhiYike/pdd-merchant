@@ -1,16 +1,21 @@
 <?php
 
 declare(strict_types=1);
-namespace Yunzhiyike\PddMerchant;
 /**
  * This file is part of Yunzhiyike
  */
 
+namespace Yunzhiyike\PddMerchant;
+
 use GuzzleHttp\Client;
 use Yunzhiyike\PddMerchant\Exception\PddMerchantException;
 
-class PddMerchantBase
+class PddMerchant
 {
+    public static int $REQUEST_OK = 1000000;
+
+    public static int $IS_NOT_DAREN = 3000000;
+
     protected Client $client;
 
     protected PddEncryptionRemoteApi $pddEncryptionRemoteApi;
@@ -18,11 +23,6 @@ class PddMerchantBase
     protected string $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36';
 
     protected static string $PDD_MERCHANT_HOST = 'https://mms.pinduoduo.com';
-
-    public static int $REQUEST_OK = 1000000;
-
-    public static int $IS_NOT_DAREN = 3000000;
-
 
     /**
      * @param int $requestTimeout 请求超时时间
@@ -49,13 +49,11 @@ class PddMerchantBase
             'crawlerInfo' => $at,
             'username' => $accountName,
         ];
-        $res = $this->client->post($uri, ['headers' => $headers, 'body' => $body])->getBody()->getContents();
+        $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
-        var_dump($res);
         if ($res['errorCode'] != self::$REQUEST_OK) {
             throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendSmsCode Unknown Error');
         }
-
     }
 
     public function getUserAgent(): string

@@ -1,10 +1,11 @@
 <?php
 
 declare(strict_types=1);
-namespace Yunzhiyike\PddMerchant;
 /**
  * This file is part of Yunzhiyike
  */
+
+namespace Yunzhiyike\PddMerchant;
 
 use GuzzleHttp\Client;
 use Yunzhiyike\PddMerchant\Exception\PddEncryptionRemoteApiException;
@@ -25,20 +26,22 @@ class PddEncryptionRemoteApi
     {
         $this->pddServiceApi = $pddServiceApi;
         $this->token = $token;
-        $this->client = new Client(['timeout' => 60]);
+        $this->client = new Client(['timeout' => 60, 'headers' => ['content-type' => 'application/json']]);
     }
 
-    public function getEncryptionPassword(string $password): string {
-        $uri = $this->pddServiceApi.'/api/v1/pdd/antiContent?token='.$this->token.'&password='.$password;
+    public function getEncryptionPassword(string $password): string
+    {
+        $uri = $this->pddServiceApi . '/api/v1/pdd/antiContent?token=' . $this->token . '&password=' . $password;
         return '';
     }
 
-    public function getAntiContent(string  $userAgent): string {
-        $uri = $this->pddServiceApi.'/api/v1/pdd/antiContent?token='.$this->token.'&ua='.$userAgent;
+    public function getAntiContent(string $userAgent): string
+    {
+        $uri = $this->pddServiceApi . '/api/v1/pdd/antiContent?token=' . $this->token . '&ua=' . $userAgent;
         $res = $this->client->get($uri)->getBody()->getContents();
         $res = json_decode($res, true);
         if ($res['code'] != self::$REQUEST_OK) {
-            throw new pddEncryptionRemoteApiException($res['message'] ?? 'PddEncryptionApi Unknown Error');
+            throw new PddEncryptionRemoteApiException($res['message'] ?? 'PddEncryptionApi Unknown Error');
         }
         return $res['data']['antiContent'] ?? '';
     }
