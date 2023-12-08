@@ -5,7 +5,8 @@
     "license": "MIT",
     "autoload": {
         "psr-4": {
-            "Yunzhiyike\\PddMerchant\\": "src/"
+            "Yunzhiyike\\PddMerchant\\": "src/",
+            "YunzhiyikeTests\\": "./tests/"
         }
     },
     "authors": [
@@ -17,7 +18,8 @@
         "guzzlehttp/guzzle": "^7.8"
     },
     "scripts": {
-        "cs-fix": "php-cs-fixer fix $1"
+        "cs-fix": "php-cs-fixer fix $1",
+        "test": "phpunit --prepend test/bootstrap.php -c phpunit.xml --colors=always"
     },
     "repositories": {
         "packagist": {
