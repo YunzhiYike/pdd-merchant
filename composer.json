@@ -1,6 +1,6 @@
 {
     "name": "yunzhiyike/pdd-merchant",
-    "description": "This is Pdd Merchant Backend Api",
+    "description": "这是一个基于拼多多商家后台的爬虫型API，它不是拼多多官方开放出来的而是通过爬虫进行协议提取出来",
     "type": "library",
     "license": "MIT",
     "autoload": {
