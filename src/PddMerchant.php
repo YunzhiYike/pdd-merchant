@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Yunzhiyike\PddMerchant;
 
 use GuzzleHttp\Client;
+use stdClass;
 use Yunzhiyike\PddMerchant\Exception\PddMerchantException;
 
 class PddMerchant
@@ -315,6 +316,10 @@ class PddMerchant
         return $this->sendPost($uri, $headers, $body);
     }
 
+    /**
+     * @throws PddMerchantException
+     *                              获取订单下载地址
+     */
     public function getOrderTaskDownloadUrl(int $id): string
     {
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/orders/export/task/getUrl';
@@ -328,6 +333,142 @@ class PddMerchant
             'jobId' => $id,
         ];
         return $this->sendPost($uri, $headers, $body);
+    }
+
+    /**
+     * @param string $oid 订单号
+     * @param int $startTime 开始时间戳
+     * @param int $endTime 结束时间戳
+     * @param int $page 页数
+     * @param int $pageSize 页码
+     * @throws PddMerchantException
+     *                              获取订单评价
+     */
+    public function getOrderComments(string $oid, int $startTime, int $endTime, int $page = 1, int $pageSize = 10): array
+    {
+        $uri = self::$PDD_MERCHANT_HOST . '/saturn/reviews/list';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://mms.pinduoduo.com/goods/evaluation/index',
+            'Cookie' => $this->cookie,
+        ];
+        $body = [
+            'pageNo' => $page,
+            'pageSize' => $pageSize,
+            'startTime' => $startTime,
+            'endTime' => $endTime,
+            'orderSn' => $oid,
+        ];
+        return $this->sendPost($uri, $headers, $body);
+    }
+
+    /**
+     * @throws PddMerchantException
+     *                              获取昨天的经营数据
+     */
+    public function queryMallScoreOverView(): array
+    {
+        $uri = self::$PDD_MERCHANT_HOST . '/sydney/api/mallScore/queryMallScoreOverView';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://mms.pinduoduo.com/sycm/evaluation/overview',
+            'Cookie' => $this->cookie,
+        ];
+        return $this->sendPost($uri, $headers, new stdClass());
+    }
+
+    /**
+     * @throws PddMerchantException
+     *                              登录检查
+     */
+    public function checkLogin(): bool
+    {
+        $uri = self::$PDD_MERCHANT_HOST . '/janus/api/checkLogin';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://mms.pinduoduo.com/sycm/evaluation/overview',
+            'Cookie' => $this->cookie,
+        ];
+        $res = $this->sendPost($uri, $headers, new stdClass());
+        return $res['login'];
+    }
+
+    /**
+     * @return void
+     * @throws PddMerchantException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * 拼多多推广二次授权
+     */
+    public function promotion2Auth(): void
+    {
+        $uri = self::$PDD_MERCHANT_HOST . '/janus/api/subSystem/generateAccessToken';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://mms.pinduoduo.com/home/',
+            'Cookie' => $this->cookie,
+        ];
+        $body = [
+            'redirectUrl' => 'https://yingxiao.pinduoduo.com/tools/index',
+        ];
+        $res = $this->sendPost($uri, $headers, $body);
+        $accessToken = $res['accessToken'];
+        $body = [
+            'accessToken' => $accessToken,
+            'subSystemId' => 7,
+        ];
+        $uri = 'https://yingxiao.pinduoduo.com/mms-gateway/user/getToken';
+        $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body]);
+        $respCookies = $res->getHeader('Set-Cookie') ?? [];
+        $res = $res->getBody()->getContents();
+        $res = json_decode($res, true);
+        if ($res['errorCode'] != self::$REQUEST_OK && $res['errorCode'] != 1000) {
+            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd promotion2Auth Unknown Error');
+        }
+        foreach ($respCookies as $cookie) {
+            $this->cookie = $this->cookie . $cookie . '; ';
+        }
+    }
+
+
+    /**
+     * @return void
+     * @throws PddMerchantException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * 拼多多视频二次授权
+     */
+    public function ddsp2Auth(): void
+    {
+        $uri = self::$PDD_MERCHANT_HOST . '/janus/api/subSystem/generateAccessToken';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://mms.pinduoduo.com/home/',
+            'Cookie' => $this->cookie,
+        ];
+        $body = [
+            'redirectUrl' => 'https://live.pinduoduo.com/login/checker?isNewCreatorFrom=video&referUrl=%2Fn-creator%2Fvideo%2Fhome%3Ffrom%3Dmms&from=mms',
+        ];
+        $res = $this->sendPost($uri, $headers, $body);
+        $accessToken = $res['accessToken'];
+        $body = [
+            'out_token' => $accessToken,
+            'token_type' => 1,
+        ];
+        $uri = 'https://live.pinduoduo.com/calpis/mms/user/login';
+        $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body]);
+        $respCookies = $res->getHeader('Set-Cookie') ?? [];
+        $res = $res->getBody()->getContents();
+        $res = json_decode($res, true);
+        if ($res['success'] === false) {
+            throw new PddMerchantException($res['error_msg'] ?? 'Pdd promotion2Auth Unknown Error');
+        }
+        foreach ($respCookies as $cookie) {
+            $this->cookie = $this->cookie . $cookie . '; ';
+        }
     }
 
     /**
@@ -396,16 +537,16 @@ class PddMerchant
         return $this;
     }
 
-    protected function sendPost(string $uri, array $headers, $body, string $at = ''): array|bool|string
+    protected function sendPost(string $uri, array $headers, array|stdClass $body, string $at = ''): array|bool|string
     {
         if ($at === '') {
             $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
+            $headers['Anti-Content'] = $at;
         }
-        $headers['Anti-Content'] = $at;
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
         if ($res['errorCode'] != self::$REQUEST_OK && $res['errorCode'] != 0) {
-            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendSmsCode Unknown Error');
+            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendPost Unknown Error');
         }
         return $res['result'];
     }
