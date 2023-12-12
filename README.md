@@ -82,7 +82,7 @@ $taskList = $pddMerchant->queryBillDownloadTaskList(1, 10);
 ```
 
 ### 3、拼多多推广
-> 登录后还无法直接调用财务接口来获取财务数据还需要对登录cookie进行拼多多推广二次鉴权
+> 登录后还无法直接调用拼多多推广相关接口来获取推广数据还需要对登录cookie进行拼多多推广二次鉴权
 ```php
 $pddMerchant = new PddMerchant(60, '远程拼多多加密服务地址', '远程拼多多加密服务token');
 
@@ -97,7 +97,7 @@ $pddMerchant->promotion2Auth()
 ```
 
 ### 4、多多视频
-> 登录后还无法直接调用财务接口来获取财务数据还需要对登录cookie进行多多视频二次鉴权
+> 登录后还无法直接调用多多视频接口来获取多多视频数据还需要对登录cookie进行多多视频二次鉴权
 ```php
 $pddMerchant = new PddMerchant(60, '远程拼多多加密服务地址', '远程拼多多加密服务token');
 
