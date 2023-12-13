@@ -277,6 +277,7 @@ class PddMerchant
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/orders/exportExcel',
             'Cookie' => $this->cookie,
+            'Anti-Content' => $at,
         ];
         $body = [
             'orderType' => 0,
