@@ -544,11 +544,16 @@ class PddMerchant
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
         $errorField = 'errorCode';
+        $errorMsgField = 'errorMsg';
         if (! isset($res[$errorField])) {
             $errorField = 'error_code';
         }
+        if (! isset($res[$errorMsgField])) {
+            $errorField = 'error_msg';
+        }
+
         if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0) {
-            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendPost Unknown Error');
+            throw new PddMerchantException($res[$errorMsgField] ?? 'Pdd sendPost Unknown Error');
         }
         return $res['result'];
     }
