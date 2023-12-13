@@ -398,10 +398,9 @@ class PddMerchant
     }
 
     /**
-     * @return void
      * @throws PddMerchantException
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * 拼多多推广二次授权
+     *                                               拼多多推广二次授权
      */
     public function promotion2Auth(): void
     {
@@ -434,12 +433,10 @@ class PddMerchant
         }
     }
 
-
     /**
-     * @return void
      * @throws PddMerchantException
      * @throws \GuzzleHttp\Exception\GuzzleException
-     * 拼多多视频二次授权
+     *                                               拼多多视频二次授权
      */
     public function ddsp2Auth(): void
     {
@@ -546,7 +543,11 @@ class PddMerchant
         }
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
-        if ($res['errorCode'] != self::$REQUEST_OK && $res['errorCode'] != 0) {
+        $errorField = 'errorCode';
+        if (! isset($res[$errorField])) {
+            $errorField = 'error_code';
+        }
+        if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0) {
             throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendPost Unknown Error');
         }
         return $res['result'];
