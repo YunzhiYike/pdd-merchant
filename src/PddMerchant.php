@@ -549,7 +549,7 @@ class PddMerchant
             $errorField = 'error_code';
         }
         if (! isset($res[$errorMsgField])) {
-            $errorField = 'error_msg';
+            $errorMsgField = 'error_msg';
         }
 
         if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0) {
