@@ -268,7 +268,7 @@ class PddMerchant
      * @throws \GuzzleHttp\Exception\GuzzleException
      *                                               创建订单导出任务
      */
-    public function createOrderTask(int $startTime, int $endTime): array
+    public function createOrderTask(int $startTime, int $endTime): bool
     {
         $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/recentOrders/export/task/add';
