@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Yunzhiyike\PddMerchant;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 use Yunzhiyike\PddMerchant\Exception\PddMerchantException;
 
@@ -44,8 +45,8 @@ class PddMerchant
      * @param string $smsCode 收到的短信验证码
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               拼多多商家登录
+     * @throws GuzzleException
+     *                         拼多多商家登录
      */
     public function login(string $accountName, string $password, string $smsCode): array
     {
@@ -133,8 +134,8 @@ class PddMerchant
     /**
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               财务二次授权
+     * @throws GuzzleException
+     *                         财务二次授权
      */
     public function finances2Auth(): void
     {
@@ -188,8 +189,8 @@ class PddMerchant
      * @param string $endMonth Y-m
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               获取财务月度数据汇总
+     * @throws GuzzleException
+     *                         获取财务月度数据汇总
      */
     public function queryMallBalanceMonthlySummary(string $startMonth, string $endMonth): array
     {
@@ -215,7 +216,7 @@ class PddMerchant
      * @param null|mixed $maxAmount 最大金额
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function createBillDownloadTask(int $beginTime, int $endTime, null|string $orderSn = null, mixed $minAmount = null, mixed $maxAmount = null): void
     {
@@ -241,8 +242,8 @@ class PddMerchant
     /**
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               获取财务流水下载任务列表 配合createBillDownloadTask使用
+     * @throws GuzzleException
+     *                         获取财务流水下载任务列表 配合createBillDownloadTask使用
      */
     public function queryBillDownloadTaskList(int $page = 1, int $pageSize = 10): array
     {
@@ -265,8 +266,8 @@ class PddMerchant
      * @param int $endTime 结束时间戳
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               创建订单导出任务
+     * @throws GuzzleException
+     *                         创建订单导出任务
      */
     public function createOrderTask(int $startTime, int $endTime): bool
     {
@@ -398,9 +399,202 @@ class PddMerchant
     }
 
     /**
+     * @param string $startDate 开始日期 YYYY-MMM-DD
+     * @param string $endDate 结束日期 YYYY-MM-DD
+     * @param int $storeId 店铺ID
+     * @param int $page 页码
+     * @param int $pageSize 页数
+     * @return array
+     * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               拼多多推广二次授权
+     * @throws GuzzleException
+     *                         获取全站推广数据
+     */
+    public function getSiteWidePromotionReport(string $startDate, string $endDate, int $storeId, int $page = 1, int $pageSize = 10): array
+    {
+        $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
+        $uri = 'https://yingxiao.pinduoduo.com/mms-gateway/apollo/api/report/queryEntityReport';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/standard/overView',
+            'Cookie' => $this->cookie,
+        ];
+        $data = [
+            'crawlerInfo' => $at,
+            'entityDimensionType' => 0,
+            'queryDimensionType' => 2,
+            'scenesType' => 9,
+            'query' => [
+                'fieldToValue' => [],
+            ],
+            'downLoadExternalFields' => [
+                'goodsName',
+                'goodsId',
+                'isDeleted',
+            ],
+            'externalFields' => [
+                'planId',
+                'adId',
+                'thumbUrl',
+                'goodsName',
+                'goodsId',
+                'minOnSaleGroupPrice',
+                'isDeleted',
+                'planDeleted',
+                'adDeleted',
+                'bid',
+                'targetRoi',
+                'planStrategy',
+                'scenesMode',
+                'mallFavBid',
+                'goodsFavBid',
+                'inquiryBid',
+                'groupName',
+            ],
+            'queryRange' => [
+                'pageNumber' => $page,
+                'pageSize' => $pageSize,
+            ],
+            'entityId' => $storeId,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'returnTotalSumReport' => true,
+            'isStandardPromotion' => 0,
+        ];
+
+        return $this->sendPost($uri, $headers, $data, $at);
+    }
+
+    /**
+     * @param string $startDate 开始日期 YYYY-MMM-DD
+     * @param string $endDate 结束日期 YYYY-MM-DD
+     * @param int $storeId 店铺ID
+     * @param int $page 页码
+     * @param int $pageSize 页数
+     * @return array
+     * @throws Exception\PddEncryptionRemoteApiException
+     * @throws PddMerchantException
+     * @throws GuzzleException
+     *                         获取标准推广数据
+     */
+    public function getStandardPromotionReport(string $startDate, string $endDate, int $storeId, int $page = 1, int $pageSize = 10): array
+    {
+        $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
+        $uri = 'https://yingxiao.pinduoduo.com/mms-gateway/apollo/api/report/queryEntityReport';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/standard/overView',
+            'Cookie' => $this->cookie,
+        ];
+        $data = [
+            'crawlerInfo' => $at,
+            'entityId' => $storeId,
+            'entityDimensionType' => 0,
+            'queryDimensionType' => 2,
+            'query' => ['fieldToValue' => []],
+            'externalFields' => ['planName', 'productType', 'planStrategy', 'planId', 'bid', 'adId', 'adName', 'mallName', 'minOnSaleGroupPrice', 'mallLogoUrl', 'thumbUrl', 'goodsName', 'goodsId', 'mallId', 'scenesType', 'isStandardPromotion', 'isReservedStandardPromotion', 'isDeleted', 'planDeleted', 'adDeleted', 'groupName'],
+            'orderBy' => null,
+            'orderType' => 0,
+            'queryRange' => ['pageSize' => $pageSize, 'pageNumber' => $page],
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'isStandardPromotion' => 1,
+            'returnTotalSumReport' => true,
+        ];
+
+        return $this->sendPost($uri, $headers, $data, $at);
+    }
+
+    /**
+     * @param string $startDate 开始日期 YYYY-MMM-DD
+     * @param string $endDate 结束日期 YYYY-MM-DD
+     * @param int $storeId 店铺ID
+     * @param int $page 页码
+     * @param int $pageSize 页数
+     * @return array
+     * @throws Exception\PddEncryptionRemoteApiException
+     * @throws PddMerchantException
+     * @throws GuzzleException
+     *                         获取直播推广数据
+     */
+    public function getLivePromotionReport(string $startDate, string $endDate, int $storeId, int $page = 1, int $pageSize = 10): array
+    {
+        $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
+        $uri = 'https://yingxiao.pinduoduo.com/mms-gateway/apollo/api/report/queryEntityReport';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/standard/overView',
+            'Cookie' => $this->cookie,
+        ];
+        $data = [
+            'crawlerInfo' => $at,
+            'entityId' => $storeId,
+            'entityDimensionType' => 0,
+            'queryDimensionType' => 2,
+            'scenesType' => 5,
+            'query' => ['fieldToValue' => []],
+            'externalFields' => ['planName', 'planId', 'adId', 'adName', 'adStatus', 'roomId', 'roomImageUrl', 'roomTitle', 'planStrategy', 'isDeleted', 'planDeleted', 'adDeleted'],
+            'orderBy' => null,
+            'orderType' => 0,
+            'queryRange' => ['pageNumber' => $page, 'pageSize' => $pageSize],
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'returnTotalSumReport' => true,
+            'isStandardPromotion' => 0,
+        ];
+
+        return $this->sendPost($uri, $headers, $data, $at);
+    }
+
+    /**
+     * @param string $startDate 开始日期 YYYY-MMM-DD
+     * @param string $endDate 结束日期 YYYY-MM-DD
+     * @param int $storeId 店铺ID
+     * @param int $page 页码
+     * @param int $pageSize 页数
+     * @return array
+     * @throws Exception\PddEncryptionRemoteApiException
+     * @throws PddMerchantException
+     * @throws GuzzleException
+     *                         获取明星推广数据
+     */
+    public function getStarPromotionReport(string $startDate, string $endDate, int $storeId, int $page = 1, int $pageSize = 10): array
+    {
+        $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
+        $uri = 'https://yingxiao.pinduoduo.com/mms-gateway/apollo/api/report/queryEntityReport';
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Content-Type' => 'application/json',
+            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/standard/overView',
+            'Cookie' => $this->cookie,
+        ];
+        $data = [
+            'crawlerInfo' => $at,
+            'entityId' => $storeId,
+            'entityDimensionType' => 0,
+            'queryDimensionType' => 1,
+            'scenesType' => 1,
+            'query' => ['fieldToValue' => []],
+            'externalFields' => ['planName', 'planId', 'adId', 'adName', 'adStatus', 'roomId', 'roomImageUrl', 'roomTitle', 'planStrategy', 'isDeleted', 'planDeleted', 'adDeleted'],
+            'orderBy' => null,
+            'orderType' => 0,
+            'queryRange' => ['pageNumber' => $page, 'pageSize' => $pageSize],
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'returnTotalSumReport' => true,
+            'isStandardPromotion' => 0,
+        ];
+
+        return $this->sendPost($uri, $headers, $data, $at);
+    }
+
+    /**
+     * @throws PddMerchantException
+     * @throws GuzzleException
+     *                         拼多多推广二次授权
      */
     public function promotion2Auth(): void
     {
@@ -435,8 +629,8 @@ class PddMerchant
 
     /**
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               拼多多视频二次授权
+     * @throws GuzzleException
+     *                         拼多多视频二次授权
      */
     public function ddsp2Auth(): void
     {
@@ -473,8 +667,8 @@ class PddMerchant
      * @param string $accountName 拼多多商家账号
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     *                                               获取验证码
+     * @throws GuzzleException
+     *                         获取验证码
      */
     public function sendSmsCode(string $accountName): void
     {
