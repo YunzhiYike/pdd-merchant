@@ -404,7 +404,6 @@ class PddMerchant
      * @param int $storeId 店铺ID
      * @param int $page 页码
      * @param int $pageSize 页数
-     * @return array
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
      * @throws GuzzleException
@@ -417,8 +416,10 @@ class PddMerchant
         $headers = [
             'User-Agent' => $this->userAgent,
             'Content-Type' => 'application/json',
-            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/standard/overView',
+            'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/odin/overView',
             'Cookie' => $this->cookie,
+            'Anti-Content' => $at,
+            'Origin' => 'https://yingxiao.pinduoduo.com',
         ];
         $data = [
             'crawlerInfo' => $at,
@@ -426,7 +427,7 @@ class PddMerchant
             'queryDimensionType' => 2,
             'scenesType' => 9,
             'query' => [
-                'fieldToValue' => [],
+                'fieldToValue' => new stdClass(),
             ],
             'downLoadExternalFields' => [
                 'goodsName',
@@ -462,7 +463,6 @@ class PddMerchant
             'returnTotalSumReport' => true,
             'isStandardPromotion' => 0,
         ];
-
         return $this->sendPost($uri, $headers, $data, $at);
     }
 
@@ -472,7 +472,6 @@ class PddMerchant
      * @param int $storeId 店铺ID
      * @param int $page 页码
      * @param int $pageSize 页数
-     * @return array
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
      * @throws GuzzleException
@@ -493,7 +492,9 @@ class PddMerchant
             'entityId' => $storeId,
             'entityDimensionType' => 0,
             'queryDimensionType' => 2,
-            'query' => ['fieldToValue' => []],
+            'query' => [
+                'fieldToValue' => new stdClass(),
+            ],
             'externalFields' => ['planName', 'productType', 'planStrategy', 'planId', 'bid', 'adId', 'adName', 'mallName', 'minOnSaleGroupPrice', 'mallLogoUrl', 'thumbUrl', 'goodsName', 'goodsId', 'mallId', 'scenesType', 'isStandardPromotion', 'isReservedStandardPromotion', 'isDeleted', 'planDeleted', 'adDeleted', 'groupName'],
             'orderBy' => null,
             'orderType' => 0,
@@ -513,7 +514,6 @@ class PddMerchant
      * @param int $storeId 店铺ID
      * @param int $page 页码
      * @param int $pageSize 页数
-     * @return array
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
      * @throws GuzzleException
@@ -535,7 +535,9 @@ class PddMerchant
             'entityDimensionType' => 0,
             'queryDimensionType' => 2,
             'scenesType' => 5,
-            'query' => ['fieldToValue' => []],
+            'query' => [
+                'fieldToValue' => new stdClass(),
+            ],
             'externalFields' => ['planName', 'planId', 'adId', 'adName', 'adStatus', 'roomId', 'roomImageUrl', 'roomTitle', 'planStrategy', 'isDeleted', 'planDeleted', 'adDeleted'],
             'orderBy' => null,
             'orderType' => 0,
@@ -555,7 +557,6 @@ class PddMerchant
      * @param int $storeId 店铺ID
      * @param int $page 页码
      * @param int $pageSize 页数
-     * @return array
      * @throws Exception\PddEncryptionRemoteApiException
      * @throws PddMerchantException
      * @throws GuzzleException
@@ -577,7 +578,9 @@ class PddMerchant
             'entityDimensionType' => 0,
             'queryDimensionType' => 1,
             'scenesType' => 1,
-            'query' => ['fieldToValue' => []],
+            'query' => [
+                'fieldToValue' => new stdClass(),
+            ],
             'externalFields' => ['planName', 'planId', 'adId', 'adName', 'adStatus', 'roomId', 'roomImageUrl', 'roomTitle', 'planStrategy', 'isDeleted', 'planDeleted', 'adDeleted'],
             'orderBy' => null,
             'orderType' => 0,
@@ -746,7 +749,7 @@ class PddMerchant
             $errorMsgField = 'error_msg';
         }
 
-        if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0) {
+        if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0 && $res[$errorField] != 1000) {
             throw new PddMerchantException($res[$errorMsgField] ?? 'Pdd sendPost Unknown Error');
         }
         return $res['result'];
