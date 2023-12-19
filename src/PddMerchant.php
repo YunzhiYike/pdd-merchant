@@ -26,6 +26,9 @@ class PddMerchant
 
     protected string $cookie;
 
+    // 验证码校验token
+    protected string $verifyAuthToken = '';
+
     protected static string $PDD_MERCHANT_HOST = 'https://mms.pinduoduo.com';
 
     /**
@@ -48,7 +51,7 @@ class PddMerchant
      * @throws GuzzleException
      *                         拼多多商家登录
      */
-    public function login(string $accountName, string $password, string $smsCode): array
+    public function login(string $accountName, string $password, string $smsCode, string $verifyAuthToken = ''): array
     {
         $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
         $encryptionPassword = $this->pddEncryptionRemoteApi->getEncryptionPassword($password);
@@ -56,6 +59,7 @@ class PddMerchant
         $headers = [
             'User-Agent' => $this->userAgent,
             'Anti-Content' => $at,
+            'Verifyauthtoken' => $verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/home/',
         ];
@@ -137,7 +141,7 @@ class PddMerchant
      * @throws GuzzleException
      *                         财务二次授权
      */
-    public function finances2Auth(): void
+    public function finances2Auth(string $verifyAuthToken = ''): void
     {
         $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
         $uri = self::$PDD_MERCHANT_HOST . '/uranus/api/ticket/getJumpUrl/mallFinanceSiteBalanceBill';
@@ -145,6 +149,7 @@ class PddMerchant
             'User-Agent' => $this->userAgent,
             'Anti-Content' => $at,
             'Content-Type' => 'application/json',
+            'Verifyauthtoken' => $verifyAuthToken,
             'Referer' => 'https://mms.pinduoduo.com/cashier/finance/payment-bills',
             'Cookie' => $this->cookie,
         ];
@@ -197,6 +202,7 @@ class PddMerchant
         $uri = 'https://cashier.pinduoduo.com/templar/api/bill/queryMallBalanceMonthlySummary?__app_code=113';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://cashier.pinduoduo.com/main/bills?tab=4001&__app_code=113',
             'Cookie' => $this->cookie,
@@ -223,6 +229,7 @@ class PddMerchant
         $uri = 'https://cashier.pinduoduo.com/templar/api/bill/createBillDownloadTask?__app_code=113';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://cashier.pinduoduo.com/main/bills?tab=4001&__app_code=113',
             'Cookie' => $this->cookie,
@@ -250,6 +257,7 @@ class PddMerchant
         $uri = 'https://cashier.pinduoduo.com/templar/api/bill/queryBillDownloadTaskList?__app_code=113';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://cashier.pinduoduo.com/main/bills?tab=4001&__app_code=113',
             'Cookie' => $this->cookie,
@@ -275,6 +283,7 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/recentOrders/export/task/add';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/orders/exportExcel',
             'Cookie' => $this->cookie,
@@ -307,6 +316,7 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/orders/export/task/list';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/orders/exportExcel',
             'Cookie' => $this->cookie,
@@ -327,6 +337,7 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/orders/export/task/getUrl';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/orders/exportExcel',
             'Cookie' => $this->cookie,
@@ -351,6 +362,7 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/saturn/reviews/list';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/goods/evaluation/index',
             'Cookie' => $this->cookie,
@@ -374,6 +386,7 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/sydney/api/mallScore/queryMallScoreOverView';
         $headers = [
             'User-Agent' => $this->userAgent,
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/sycm/evaluation/overview',
             'Cookie' => $this->cookie,
@@ -416,6 +429,7 @@ class PddMerchant
         $headers = [
             'User-Agent' => $this->userAgent,
             'Content-Type' => 'application/json',
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Referer' => 'https://yingxiao.pinduoduo.com/goods/report/odin/overView',
             'Cookie' => $this->cookie,
             'Anti-Content' => $at,
@@ -607,6 +621,7 @@ class PddMerchant
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/home/',
             'Cookie' => $this->cookie,
+            'Verifyauthtoken' => $this->verifyAuthToken,
         ];
         $body = [
             'redirectUrl' => 'https://yingxiao.pinduoduo.com/tools/index',
@@ -642,6 +657,7 @@ class PddMerchant
             'User-Agent' => $this->userAgent,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/home/',
+            'Verifyauthtoken' => $this->verifyAuthToken,
             'Cookie' => $this->cookie,
         ];
         $body = [
@@ -732,8 +748,20 @@ class PddMerchant
         return $this;
     }
 
+    public function getVerifyAuthToken(): string
+    {
+        return $this->verifyAuthToken;
+    }
+
+    public function setVerifyAuthToken(string $verifyAuthToken): PddMerchant
+    {
+        $this->verifyAuthToken = $verifyAuthToken;
+        return $this;
+    }
+
     protected function sendPost(string $uri, array $headers, array|stdClass $body, string $at = ''): array|bool|string
     {
+        $headers['Verifyauthtoken']= $this->verifyAuthToken;
         if ($at === '') {
             $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
             $headers['Anti-Content'] = $at;
