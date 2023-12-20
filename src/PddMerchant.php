@@ -11,12 +11,16 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use stdClass;
 use Yunzhiyike\PddMerchant\Exception\PddMerchantException;
+use Yunzhiyike\PddMerchant\Exception\PddSliderVerifyException;
 
 class PddMerchant
 {
     protected static int $REQUEST_OK = 1000000;
 
     protected static int $IS_NOT_DAREN = 3000000;
+
+    // 移动滑块验证码
+    protected static int $SLIDER_VERIFY = 54001;
 
     protected Client $client;
 
@@ -158,8 +162,16 @@ class PddMerchant
         ];
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
+
+
+        // 滑块验证码异常
+        if ($res['errorCode'] == self::$SLIDER_VERIFY) {
+            $this->verifyAuthToken = $res['result']['verifyAuthToken'];
+            throw new PddSliderVerifyException($res['errorMsg'] ?? 'Pdd finances2Auth Unknown Error');
+        }
+
         if ($res['errorCode'] != self::$REQUEST_OK) {
-            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendSmsCode Unknown Error');
+            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd finances2Auth Unknown Error');
         }
         // 使用 parse_url 解析 URL
         $urlComponents = parse_url($res['result']);
@@ -181,7 +193,7 @@ class PddMerchant
         $res = $res->getBody()->getContents();
         $res = json_decode($res, true);
         if ($res['errorCode'] != self::$REQUEST_OK) {
-            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd sendSmsCode Unknown Error');
+            throw new PddMerchantException($res['errorMsg'] ?? 'Pdd finances2Auth Unknown Error');
         }
         $this->cookie = '';
         foreach ($respCookies as $cookie) {
@@ -229,7 +241,6 @@ class PddMerchant
         $uri = 'https://cashier.pinduoduo.com/templar/api/bill/createBillDownloadTask?__app_code=113';
         $headers = [
             'User-Agent' => $this->userAgent,
-            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://cashier.pinduoduo.com/main/bills?tab=4001&__app_code=113',
             'Cookie' => $this->cookie,
@@ -283,7 +294,6 @@ class PddMerchant
         $uri = self::$PDD_MERCHANT_HOST . '/mars/shop/recentOrders/export/task/add';
         $headers = [
             'User-Agent' => $this->userAgent,
-            'Verifyauthtoken' => $this->verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/orders/exportExcel',
             'Cookie' => $this->cookie,
@@ -637,6 +647,11 @@ class PddMerchant
         $respCookies = $res->getHeader('Set-Cookie') ?? [];
         $res = $res->getBody()->getContents();
         $res = json_decode($res, true);
+        // 滑块验证码异常
+        if ($res['errorCode'] == self::$SLIDER_VERIFY) {
+            $this->verifyAuthToken = $res['result']['verifyAuthToken'];
+            throw new PddSliderVerifyException($res['errorMsg'] ?? 'Pdd promotion2Auth Unknown Error');
+        }
         if ($res['errorCode'] != self::$REQUEST_OK && $res['errorCode'] != 1000) {
             throw new PddMerchantException($res['errorMsg'] ?? 'Pdd promotion2Auth Unknown Error');
         }
@@ -674,8 +689,14 @@ class PddMerchant
         $respCookies = $res->getHeader('Set-Cookie') ?? [];
         $res = $res->getBody()->getContents();
         $res = json_decode($res, true);
+        // 滑块验证码异常
+        if ($res['error_code'] == self::$SLIDER_VERIFY) {
+            $this->verifyAuthToken = $res['result']['verifyAuthToken'];
+            throw new PddSliderVerifyException($res['error_msg'] ?? 'Pdd ddsp2Auth Unknown Error');
+        }
+
         if ($res['success'] === false) {
-            throw new PddMerchantException($res['error_msg'] ?? 'Pdd promotion2Auth Unknown Error');
+            throw new PddMerchantException($res['error_msg'] ?? 'Pdd ddsp2Auth Unknown Error');
         }
         foreach ($respCookies as $cookie) {
             $this->cookie = $this->cookie . $cookie . '; ';
@@ -761,7 +782,7 @@ class PddMerchant
 
     protected function sendPost(string $uri, array $headers, array|stdClass $body, string $at = ''): array|bool|string
     {
-        $headers['Verifyauthtoken']= $this->verifyAuthToken;
+        $headers['Verifyauthtoken'] = $this->verifyAuthToken;
         if ($at === '') {
             $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
             $headers['Anti-Content'] = $at;
@@ -775,6 +796,12 @@ class PddMerchant
         }
         if (! isset($res[$errorMsgField])) {
             $errorMsgField = 'error_msg';
+        }
+
+        // 滑块验证码异常
+        if ($res[$errorField] == self::$SLIDER_VERIFY) {
+            $this->verifyAuthToken = $res['result']['verifyAuthToken'];
+            throw new PddSliderVerifyException($res[$errorMsgField] ?? 'Pdd sendPost Unknown Error');
         }
 
         if ($res[$errorField] != self::$REQUEST_OK && $res[$errorField] != 0 && $res[$errorField] != 1000) {
