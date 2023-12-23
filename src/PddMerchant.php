@@ -55,7 +55,7 @@ class PddMerchant
      * @throws GuzzleException
      *                         拼多多商家登录
      */
-    public function login(string $accountName, string $password, string $smsCode, string $verifyAuthToken = ''): array
+    public function login(string $accountName, string $password, string $smsCode = '', string $verifyAuthToken = ''): array
     {
         $at = $this->pddEncryptionRemoteApi->getAntiContent($this->userAgent);
         $encryptionPassword = $this->pddEncryptionRemoteApi->getEncryptionPassword($password);
@@ -66,7 +66,11 @@ class PddMerchant
             'Verifyauthtoken' => $verifyAuthToken,
             'Content-Type' => 'application/json',
             'Referer' => 'https://mms.pinduoduo.com/home/',
+            'Cookie' => 'api_uid=CiZ1YWTCD6GybQB0avHtAg==; _nano_fp=XpEbX0TqlpdJn5Xono_7i0~M7KNqZKf8Aa4cZdC8; _bee=u1czU5ZKCeEXJi2ervItVONpjgmscheu; _f77=a610acb0-2b3f-49ef-a6a7-d06e3bd17453; _a42=83f5b051-1eda-46c4-b28e-027000b7a952; rckk=u1czU5ZKCeEXJi2ervItVONpjgmscheu; ru1k=a610acb0-2b3f-49ef-a6a7-d06e3bd17453; ru2k=83f5b051-1eda-46c4-b28e-027000b7a952; webp=true; mms_b84d1838=3523,3254,3532,3474,3475,3477,3479,3482,1202,1203,1204,1205,3417,3397; x-visit-time=1703320276579; JSESSIONID=FF1E362C41020B766E86762974F7D532',
         ];
+        $ts = time() * 1000;
+        $s = sprintf('username=%s&password=%s&ts=%s', $accountName, $password, $ts);
+        $riskSign = $this->pddEncryptionRemoteApi->getEncryptionPassword($s);
         $body = [
             'username' => $accountName,
             'password' => $encryptionPassword,
@@ -75,17 +79,17 @@ class PddMerchant
             'mobileVerifyCode' => $smsCode,
             'sign' => '',
             'touchevent' => [
-                'mobileInputEditStartTime' => 1700317167504,
-                'mobileInputEditFinishTime' => 1700317168690,
-                'mobileInputKeyboardEvent' => '0|1|0|2559-56-684-1170-524-75',
-                'passwordInputEditStartTime' => 1700317168161,
-                'passwordInputEditFinishTime' => 1700317168167,
-                'passwordInputKeyboardEvent' => '0|0|0|',
+                'mobileInputEditStartTime' => $ts,
+                'mobileInputEditFinishTime' => $ts,
+                'mobileInputKeyboardEvent' => '0|1|1|522-712',
+                'passwordInputEditStartTime' => $ts,
+                'passwordInputEditFinishTime' => $ts,
+                'passwordInputKeyboardEvent' => '0|0|0|573-620-272-226-249-81-249-268-236-261-2254-178',
                 'captureInputEditStartTime' => '',
                 'captureInputEditFinishTime' => '',
                 'captureInputKeyboardEvent' => '',
-                'loginButtonTouchPoint' => '227,607',
-                'loginButtonClickTime' => 1700317168723,
+                'loginButtonTouchPoint' => '1166,530',
+                'loginButtonClickTime' => $ts,
             ],
             'fingerprint' => [
                 'innerHeight' => 682,
@@ -115,14 +119,14 @@ class PddMerchant
                     'vendor' => 'Google Inc.',
                     'product' => 'Gecko',
                     'productSub' => '20030107',
-                    'mimeTypes' => '2a05ac4783528564abb5534cb19317b5a76e846c',
-                    'plugins' => '815724e1464029ae6166c291b0ab1753240abbc3',
+                    'mimeTypes' => 'f5a1111231f589322da33fb59b56946b4043e092',
+                    'plugins' => '387b918f593d4d8d6bfa647c07e108afbd7a6223',
                 ],
                 'referer' => '',
                 'timezoneOffset' => -480,
             ],
-            'riskSign' => 'X8wpVKEOyKZKsLfbaZM8+vI3r2US0iljeqQ2UQcBXiUmx1lxvzPMBQhnbz9m8/b+mbsPqqnPcyr8GLDuqV26oc16jIJ630CYlEXdECVg3y4hUcGKaRYXwNCsXGV9W/LYAY813aa/W7Bi5oDdv0kZCN6zKc/2qrRGp9sxBIQuTlI=',
-            'timestamp' => 1701945511105,
+            'riskSign' => $riskSign,
+            'timestamp' => $ts,
             'crawlerInfo' => $at,
         ];
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body]);
@@ -162,7 +166,6 @@ class PddMerchant
         ];
         $res = $this->client->post($uri, ['headers' => $headers, 'json' => $body])->getBody()->getContents();
         $res = json_decode($res, true);
-
 
         // 滑块验证码异常
         if ($res['errorCode'] == self::$SLIDER_VERIFY) {
